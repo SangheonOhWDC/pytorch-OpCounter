@@ -92,7 +92,10 @@ def profile_origin(model, inputs, custom_ops=None, verbose=True, report_missing=
 
         m.register_buffer('total_ops', torch.zeros(1, dtype=default_dtype))
         m.register_buffer('total_params', torch.zeros(1, dtype=default_dtype))
-
+        #Additional OPS Buffers for Seperated OPS counting
+        m.register_buffer('addition', torch.zeros(1, dtype=default_dtype))
+        m.register_buffer('multiplication', torch.zeros(1, dtype=default_dtype))
+        
         for p in m.parameters():
             m.total_params += torch.DoubleTensor([p.numel()])
 
@@ -164,7 +167,9 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
     def add_hooks(m: nn.Module):
         m.register_buffer('total_ops', torch.zeros(1, dtype=torch.float64))
         m.register_buffer('total_params', torch.zeros(1, dtype=torch.float64))
-
+        #Additional OPS Buffers for Seperated OPS counting
+        m.register_buffer('addition', torch.zeros(1, dtype=default_dtype))
+        m.register_buffer('multiplication', torch.zeros(1, dtype=default_dtype))
         # for p in m.parameters():
         #     m.total_params += torch.DoubleTensor([p.numel()])
 
@@ -204,14 +209,17 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
             #     m_ops, m_params = m.total_ops, m.total_params
             if m in handler_collection and not isinstance(m, (nn.Sequential, nn.ModuleList)):
                 m_ops, m_params = m.total_ops.item(), m.total_params.item()
+                m_add, m_mult = m.addition.item(), m.multiplication.item()
             else:
-                m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
+                m_ops, m_params, m_add, m_mult = dfs_count(m, prefix=prefix + "\t")
             total_ops += m_ops
             total_params += m_params
+            total_add += m_add
+            total_mult = m_mult
         #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
-        return total_ops, total_params
+        return total_ops, total_params, total_add, total_mult
 
-    total_ops, total_params = dfs_count(model)
+    total_ops, total_params, total_add, total_mult = dfs_count(model)
 
     # reset model to original status
     model.train(prev_training_status)
@@ -220,5 +228,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         params_handler.remove()
         m._buffers.pop("total_ops")
         m._buffers.pop("total_params")
-
+        m._buffers.pop("addition")
+        m._buffers.pop("multiplication")
+        
     return total_ops, total_params

@@ -61,26 +61,39 @@ def _count_lstm_cell(input_size, hidden_size, bias=True):
     # o = \sigma(W_{io} x + b_{io} + W_{ho} h + b_{ho}) \\
     # g = \tanh(W_{ig} x + b_{ig} + W_{hg} h + b_{hg}) \\
     state_ops = (input_size + hidden_size) * hidden_size + hidden_size
+    state_mult = (input_size + hidden_size) * hidden_size
+    state_add = hidden_size
     if bias:
         state_ops += hidden_size * 2
+        state_add += hidden_size * 2
+        
     total_ops += state_ops * 4
-
+    state_mult = state_mult * 4
+    state_add = state_add * 4
+    
     # c' = f * c + i * g \\
     # hadamard hadamard add
     total_ops += hidden_size * 3
-
+    state_mult += hidden_size * 2
+    state_add += hidden_size
+    
     # h' = o * \tanh(c') \\
     total_ops += hidden_size
-
-    return total_ops
+    state_mult += hidden_size
+    
+    return total_ops, state_mult, state_add
 
 
 def count_lstm_cell(m: nn.LSTMCell, x: torch.Tensor, y: torch.Tensor):
-    total_ops = _count_lstm_cell(m.input_size, m.hidden_size, m.bias)
+    total_ops, state_mult, state_add = _count_lstm_cell(m.input_size, m.hidden_size, m.bias)
 
     batch_size = x[0].size(0)
     total_ops *= batch_size
-
+    state_mult *= batch_size
+    state_add *= state_add
+    
+    m.addition += torch.DoubleTensor([int(state_add)])
+    m.multiplication += torch.DoubleTensor([int(state_mult)])
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 

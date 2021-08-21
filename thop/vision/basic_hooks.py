@@ -26,7 +26,13 @@ def count_convNd(m: _ConvNd, x: (torch.Tensor,), y: torch.Tensor):
     bias_ops = 1 if m.bias is not None else 0
 
     # N x Cout x H x W x  (Cin x Kw x Kh + bias)
+    addition_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops + bias_ops)
+    multiplication_ops = y.nelement() * m.in_channels // m.groups * kernel_ops
+    
     total_ops = y.nelement() * (m.in_channels // m.groups * kernel_ops + bias_ops)
+    
+    m.addition += addition_ops
+    m.multiplication += multiplication_ops
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
@@ -52,7 +58,11 @@ def count_bn(m, x, y):
     if not m.training:
         # subtract, divide, gamma, beta
         total_ops = 2 * nelements
-
+        total_mult = 2 * nelements
+        total_add = 3 * nelements
+        
+    m.addition += total_add
+    m.multiplication += total_mult
     m.total_ops += torch.DoubleTensor([int(total_ops)])
 
 
@@ -132,9 +142,12 @@ def count_upsample(m, x, y):
 def count_linear(m, x, y):
     # per output element
     total_mul = m.in_features
-    # total_add = m.in_features - 1
-    # total_add += 1 if m.bias is not None else 0
+    total_add = m.in_features - 1
+    total_add += 1 if m.bias is not None else 0
     num_elements = y.numel()
     total_ops = total_mul * num_elements
-
+    
+    m.addition += total_add
+    m.multiplication += total_mul
+    
     m.total_ops += torch.DoubleTensor([int(total_ops)])
