@@ -231,4 +231,4 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         m._buffers.pop("addition")
         m._buffers.pop("multiplication")
         
-    return total_ops, total_params
+    return total_ops, total_params, total_add, total_mult
