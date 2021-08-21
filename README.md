@@ -6,7 +6,7 @@
 
 OR
 
-`pip install --upgrade git+https://github.com/Lyken17/pytorch-OpCounter.git`
+`pip install --upgrade git+https://github.com/SangheonOhWDC/pytorch-OpCounter.git`
     
 ## How to use 
 * Basic usage 
