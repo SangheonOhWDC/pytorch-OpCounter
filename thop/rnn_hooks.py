@@ -212,7 +212,7 @@ def count_lstm(m: nn.LSTM, x, y):
             total_mult += mult * 2
             total_add += add * 2
         else:
-            ops, mult, add = _count_lstm_cell(input_size, hidden_size, bias
+            ops, mult, add = _count_lstm_cell(input_size, hidden_size, bias)
             total_ops += ops
             total_mult += mult
             total_add += add
