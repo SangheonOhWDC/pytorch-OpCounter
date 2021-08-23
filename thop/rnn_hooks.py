@@ -55,7 +55,8 @@ def count_gru_cell(m: nn.GRUCell, x: torch.Tensor, y: torch.Tensor):
 
 def _count_lstm_cell(input_size, hidden_size, bias=True):
     total_ops = 0
-
+    state_mult = 0
+    state_add = 0
     # i = \sigma(W_{ii} x + b_{ii} + W_{hi} h + b_{hi}) \\
     # f = \sigma(W_{if} x + b_{if} + W_{hf} h + b_{hf}) \\
     # o = \sigma(W_{io} x + b_{io} + W_{ho} h + b_{ho}) \\
@@ -68,8 +69,8 @@ def _count_lstm_cell(input_size, hidden_size, bias=True):
         state_add += hidden_size * 2
         
     total_ops += state_ops * 4
-    state_mult = state_mult * 4
-    state_add = state_add * 4
+    state_mult += state_mult * 4
+    state_add += state_add * 4
     
     # c' = f * c + i * g \\
     # hadamard hadamard add
