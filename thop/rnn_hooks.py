@@ -206,10 +206,15 @@ def count_lstm(m: nn.LSTM, x, y):
 
     for i in range(num_layers - 1):
         if m.bidirectional:
-            total_ops += _count_lstm_cell(hidden_size * 2, hidden_size,
-                                          bias) * 2
+            ops, mult, add = _count_lstm_cell(input_size, hidden_size * 2, bias) * 2
+            total_ops += ops
+            total_mult += mult
+            total_add += add
         else:
-            total_ops += _count_lstm_cell(hidden_size, hidden_size, bias)
+            ops, mult, add = _count_lstm_cell(input_size, hidden_size, bias
+            total_ops += ops
+            total_mult += mult
+            total_add += add
 
     # time unroll
     total_ops *= num_steps

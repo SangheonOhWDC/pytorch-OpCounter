@@ -215,7 +215,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
             total_ops += m_ops
             total_params += m_params
             total_add += m_add
-            total_mult = m_mult
+            total_mult += m_mult
         #  print(prefix, module._get_name(), (total_ops.item(), total_params.item()))
         return total_ops, total_params, total_add, total_mult
 
