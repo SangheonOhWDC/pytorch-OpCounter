@@ -227,5 +227,5 @@ def count_lstm(m: nn.LSTM, x, y):
     total_add *= batch_size
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
-    m.addition += torch.DoubleTensor([int(state_add)])
-    m.multiplication += torch.DoubleTensor([int(state_mult)])
+    m.addition += torch.DoubleTensor([int(total_add)])
+    m.multiplication += torch.DoubleTensor([int(total_mult)])
