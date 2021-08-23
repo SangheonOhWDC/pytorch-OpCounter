@@ -191,10 +191,18 @@ def count_lstm(m: nn.LSTM, x, y):
             num_steps = x[0].size(0)
 
     total_ops = 0
+    total_mult = 0
+    total_add = 0
     if m.bidirectional:
-        total_ops += _count_lstm_cell(input_size, hidden_size, bias) * 2
+        ops, mult, add = _count_lstm_cell(input_size, hidden_size, bias) * 2
+        total_ops += ops
+        total_mult += mult
+        total_add += add
     else:
-        total_ops += _count_lstm_cell(input_size, hidden_size, bias)
+        ops, mult, add = _count_lstm_cell(input_size, hidden_size, bias
+        total_ops += ops
+        total_mult += mult
+        total_add += add
 
     for i in range(num_layers - 1):
         if m.bidirectional:
@@ -205,7 +213,13 @@ def count_lstm(m: nn.LSTM, x, y):
 
     # time unroll
     total_ops *= num_steps
+    total_mult *= num_steps
+    total_add *= num_steps
     # batch_size
     total_ops *= batch_size
+    total_mult *= batch_size
+    total_add *= batch_size
 
     m.total_ops += torch.DoubleTensor([int(total_ops)])
+    m.addition += torch.DoubleTensor([int(state_add)])
+    m.multiplication += torch.DoubleTensor([int(state_mult)])

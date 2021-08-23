@@ -201,7 +201,7 @@ def profile(model: nn.Module, inputs, custom_ops=None, verbose=True, report_miss
         model(*inputs)
 
     def dfs_count(module: nn.Module, prefix="\t") -> (int, int):
-        total_ops, total_params = 0, 0
+        total_ops, total_params, total_add, total_mult = 0, 0, 0, 0
         for m in module.children():
             # if not hasattr(m, "total_ops") and not hasattr(m, "total_params"):  # and len(list(m.children())) > 0:
             #     m_ops, m_params = dfs_count(m, prefix=prefix + "\t")
