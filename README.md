@@ -1,4 +1,5 @@
 # THOP: PyTorch-OpCounter
+Revised from original version to have seperated addition and multiplication numbers.
 
 ## How to install 
     
